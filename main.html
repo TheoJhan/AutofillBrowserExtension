@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBAA Mainpage</title>
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="libs/firebase-app-compat.js"></script>
+    <script src="libs/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="menu-btn" id="openDashboardBtn" title="Open Full Dashboard">
+                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            </div>
+            <div class="logo">CB-PHAA</div>
+            <div class="header-icons">
+                <div class="icon-btn heart">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+                </div>
+                <div class="icon-btn plan" id="planBtn" title="Plan">
+                    <img src="icons/plan.svg" alt="Plan">
+                </div>
+            </div>
+        </header>
+        <main class="dashboard-main">
+            <div class="connection-info">
+                <div class="status">Status: Auto</div>
+                <div class="location">
+                    <h2 id="domain-name">loading...</h2>
+                    <button class="play-pause-btn" id="playPauseBtn" title="Start Action" disabled>
+                        <svg class="play-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+                        <svg class="pause-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+                    </button>
+                </div>
+                <div class="sub-location">Current Site</div>
+                <div id="idboxDisplay" class="idbox-display"></div>
+            </div>
+            <div class="power-btn-container">
+                <button class="power-btn">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"></path></svg>
+                </button>
+            </div>
+        </main>
+        <footer class="dashboard-footer">
+            <span id="footer-text">CB-PH Advance Autofill v1.0.0</span>
+            <div class="remember-indicator" id="rememberIndicator" style="display: none;">
+                <span class="remember-icon">🔐</span>
+                <span class="remember-text">Remember Me</span>
+            </div>
+            <div class="icon-btn logout-btn" id="logoutBtn" title="Logout">
+                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"></path></svg>
+            </div>
+        </footer>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html> 

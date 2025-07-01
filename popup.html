@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=300, height=350, initial-scale=1.0">
+    <title>CB-PH Advance Autofill</title>
+    <link rel="stylesheet" href="popup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            width: 300px;
+            height: 350px;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #a8e063, #56ab2f);
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .login-container {
+            width: 100vw;
+            height: 100vh;
+            min-width: 0;
+            min-height: 0;
+            margin: 0;
+            padding: 18px 18px 12px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: inherit;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .login-logo {
+            width: 56px;
+            height: 56px;
+            margin-bottom: 8px;
+        }
+        .login-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            padding: 0;
+            position: relative;
+        }
+        .form-group label {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 2px;
+            opacity: 0.9;
+            padding-left: 2px;
+        }
+        .form-group input {
+            padding: 7px 36px 7px 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 13px;
+            font-family: 'Poppins', Arial, sans-serif;
+            background: rgba(255, 255, 255, 0.1);
+            color: #222;
+            transition: all 0.2s ease;
+            height: 32px;
+            box-sizing: border-box;
+        }
+        .form-group input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+        .form-group input::placeholder {
+            color: rgba(0, 0, 0, 0.3);
+            font-size: 12px;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 28px;
+            width: 20px;
+            height: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        .toggle-password svg {
+            width: 20px;
+            height: 20px;
+            fill: #888;
+        }
+        .login-btn {
+            background: #fff;
+            color: #56ab2f;
+            border: none;
+            padding: 9px 0;
+            border-radius: 5px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Poppins', Arial, sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 6px;
+            min-height: 32px;
+            width: 100%;
+        }
+        .message {
+            font-size: 12px;
+            text-align: center;
+            width: 100%;
+            min-height: 16px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            display: none;
+            background: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 2px;
+            margin: 0;
+        }
+        .message.error {
+            color: #c62828;
+            display: block;
+            background: none;
+        }
+        .message.success {
+            color: #2e7d32;
+            display: block;
+            background: none;
+        }
+        .message.info {
+            color: #1976d2;
+            display: block;
+            background: none;
+        }
+        .login-links {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .login-links .link {
+            font-size: 12px;
+            color: #1976d2;
+            text-decoration: underline;
+            opacity: 0.85;
+            padding: 0 2px;
+            cursor: pointer;
+        }
+        .link-separator {
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="icons/CB-ph-48.png" alt="Logo" class="login-logo"><h3>CB-PH Advance Autofill</h3>
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="username">Email</label>
+                <input type="email" id="username" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+                <button type="button" id="togglePassword" class="toggle-password" tabindex="-1" aria-label="Show or hide password">
+                    <!-- Eye icon (visible by default) -->
+                    <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/></svg>
+                    <svg id="eyeOffIcon" viewBox="0 0 24 24" style="display:none"><path d="M12 6c-3.86 0-7.16 2.69-8.47 6 1.31 3.31 4.61 6 8.47 6 3.86 0 7.16-2.69 8.47-6-1.31-3.31-4.61-6-8.47-6zm0 10c-2.21 0-4-1.79-4-4 0-.46.08-.91.21-1.32l5.11 5.11c-.41.13-.86.21-1.32.21zm6.49-1.32l-1.41-1.41c.13-.41.21-.86.21-1.32 0-2.21-1.79-4-4-4-.46 0-.91.08-1.32.21l-1.41-1.41c.87-.34 1.81-.53 2.73-.53 3.31 0 6.16 2.69 7.47 6-1.31 3.31-4.16 6-7.47 6-.92 0-1.86-.19-2.73-.53l1.41-1.41c.41.13.86.21 1.32.21 2.21 0 4-1.79 4-4 0-.46-.08-.91-.21-1.32z"/></svg>
+                </button>
+            </div>
+            <button type="submit" id="loginBtn" class="login-btn">Sign In</button>
+        </form>
+        <div class="login-links">
+            <span class="link" id="forgotPassword">Forgot Password?</span>
+            <span class="link-separator">|</span>
+            <a href="https://cb-phaa.web.app/sign-up.html" target="_blank" class="link" id="signup">Sign Up</a>
+        </div>
+        <div id="message" class="message"></div>
+    </div>
+    <script src="libs/firebase-app-compat.js"></script>
+    <script src="libs/firebase-auth-compat.js"></script>
+    <script src="libs/firebase-firestore-compat.js"></script>
+    <script src="popup.js"></script>
+
+</body>
+</html> 

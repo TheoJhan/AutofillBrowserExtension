@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "CB-PH Advance Autofill",
+  "version": "1.0",
+  "description": "Automatically fills forms based on predefined selectors.",
+  "permissions": ["scripting", "storage", "tabs", "activeTab","clipboardWrite", "gcm","notifications"],
+  "host_permissions": ["<all_urls>"],
+  "icons": {
+    "16": "icons/CB-ph-16.png",
+    "48": "icons/CB-ph-48.png",
+    "128": "icons/CB-ph-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/CB-ph-16.png",
+      "48": "icons/CB-ph-48.png",
+      "128": "icons/CB-ph-128.png"
+    }
+  },
+	"background": {
+	  "service_worker": "background.js"
+	},
+  "web_accessible_resources": [
+    {
+      "resources": ["libs/*.js", "automation/*.json"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "commands": {
+    "start-automation": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "Run automation manually"
+    },
+    "open-debug": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+D"
+      },
+      "description": "Open debug console"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://cb-phaa.web.app/*"],
+      "js": ["content-bridge.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

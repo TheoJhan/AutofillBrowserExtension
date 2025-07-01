@@ -1,0 +1,165 @@
+[{"action":"fill","selector":"#signup_free-element-11","valueKey":"campEmail"},{"action":"fill","selector":"#signup_free-element-12","valueKey":"campEmail"},{"action":"fill","selector":"#signup_free-element-13","valueKey":"passDirectory"},{"action":"fill","selector":"#signup_free-element-14","valueKey":"passDirectory"},
+  {
+    "action": "click",
+    "selector": ".btn.btn-block.btn-warning.bold",
+    "valueKey": "NextButtonSave"
+  },
+
+  {
+    "action": "fill",
+    "selector": "[name=\"listing_type\"]",
+    "value": "Company"
+  },
+
+  {
+    "action": "fill",
+    "selector": "[name=\"first_name\"]",
+    "valueKey": "contactFirstNameBox"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"last_name\"]",
+    "valueKey": "contactLastNameBox"
+  },
+   {
+    "action": "fill",
+    "selector": "[name=\"company\"]",
+    "valueKey": "businessNameBox"
+  },
+   {
+    "action": "fill",
+    "selector": "[name=\"profession_id\"]",
+    "value": "profession_id"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"phone_number\"]",
+    "valueKey": "contactTelephoneBox"
+  },
+   {
+    "action": "fill",
+    "selector": "[name=\"email\"]",
+    "valueKey": "campEmail"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"address1\"]",
+    "valueKey": "line1"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"address2\"]",
+    "valueKey": "line2"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"city\"]",
+    "valueKey": "city"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"state_ln\"]",
+    "valueKey": "state"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"country_ln\"]",
+    "valueKey": "country"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"country_code\"]",
+    "valueKey": "countryabbv"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"zip_code\"]",
+    "valueKey": "zipcode"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"website\"]",
+    "valueKey": "websiteBox"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"facebook\"]",
+    "valueKey": "facebookBox"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"twitter\"]",
+    "valueKey": "twitterBox"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"linkedin\"]",
+    "valueKey": "linkedinBox"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"youtube\"]",
+    "valueKey": "youtubeBox"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"instagram\"]",
+    "valueKey": "instagramBox"
+  },
+  {
+    "action": "fill",
+    "selector": "[name=\"pinterest\"]",
+    "valueKey": "pinterestBox"
+  },
+  {
+    "action": "click",
+    "selector": "#member_contact_details_83-element-39",
+    "valueKey": "NextButtonSave"
+  },
+  {
+    "action": "click",
+    "selector": ".btn.btn-lg.btn-primary.change-current-logo",
+    "valueKey": "UploadButton"
+  },
+  {
+    "action": "uploadImages",
+    "selector": "#logo-img-upload-input",
+    "valueKey": "logoBox"
+  },
+  {
+    "action": "click",
+    "selector": ".btn.btn-primary.bold.upload-logo.col-md-8",
+    "valueKey": "UploadButtonSave"
+  },
+    {
+    "action": "click",
+    "selector": ".btn.btn-success.btn-lg.btn-block",
+    "valueKey": "NextButtonSave"
+  },
+  {
+    "action": "fill",
+    "selector": "#member_listing_details_82-element-9",
+    "valueKey": "yearFormationBox"
+  },
+  {
+    "action": "fill",
+    "selector": "#member_listing_details_82-element-11",
+    "valueKey": "businessHoursBox"
+  },
+  {
+    "action": "fill",
+    "selector": "#member_listing_details_82-element-12",
+    "valueKey": "paymentMethodsBox"
+  },
+  {
+    "action": "click",
+    "selector": "#member_listing_details_82-element-15",
+    "valueKey": "NextButtonSave"
+  },
+	{
+	  "action": "richFill",
+	  "selector": ".fr-element.fr-view.fr-element-scroll-visible",
+	  "valueKey": "longDescriptionBox"
+	}
+
+]
