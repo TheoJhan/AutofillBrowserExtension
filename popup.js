@@ -80,11 +80,115 @@ function showMessage(text, type = 'info') {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+// --- Helper functions for base64 encoding/decoding ---
+function encodeBase64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function decodeBase64(str) {
+  return decodeURIComponent(escape(atob(str)));
+}
+
+// Debounce redirect to main.html to prevent loops
+let redirectingToMain = false;
+function safeRedirectToMain() {
+    if (!redirectingToMain) {
+        redirectingToMain = true;
+        window.location.href = 'main.html';
+    }
+}
+
+// --- Firebase Login Handler with Remember Me and Token Storage ---
+async function handleFirebaseLogin(email, password, rememberMe) {
+  const loginBtn = document.getElementById('loginBtn');
+  const showMessage = window.showMessage || function(msg, type) { alert(msg); };
+  try {
+    // Set persistence
+    if (rememberMe) {
+      await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    } else {
+      await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    }
+    // Sign in
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    const user = userCredential.user;
+    // Save auth info to local storage
+    const rememberMeExpiry = rememberMe ? (Date.now() + 14 * 24 * 60 * 60 * 1000) : null; // 2 weeks
+    const storageObj = {
+      isLoggedIn: true,
+      email: user.email,
+      userUid: user.uid,
+      rememberMe: rememberMe,
+      rememberMeExpiry
+    };
+    if (rememberMe) {
+      storageObj.rememberedEmail = encodeBase64(email);
+      storageObj.rememberedPassword = encodeBase64(password);
+    } else {
+      storageObj.rememberedEmail = null;
+      storageObj.rememberedPassword = null;
+    }
+    await chrome.storage.local.set(storageObj);
+    // Save Firestore user doc id if exists
+    try {
+      const userDoc = await db.collection('userExtensions').doc(user.uid).get();
+      if (userDoc.exists) {
+        await chrome.storage.local.set({ firestoreUserId: userDoc.id });
+      }
+    } catch (firestoreErr) {}
+    // Save Firebase ID token
+    const saveToken = async () => {
+      const token = await user.getIdToken();
+      await chrome.storage.local.set({ firebaseAuthToken: token });
+    };
+    await saveToken();
+    // Listen for token refresh and update
+    auth.onIdTokenChanged(async (user) => {
+      if (user) {
+        const token = await user.getIdToken();
+        await chrome.storage.local.set({ firebaseAuthToken: token });
+      }
+    });
+    showMessage(`Welcome, ${user.email}!`, 'success');
+    setTimeout(() => {
+      safeRedirectToMain();
+    }, 1000);
+  } catch (error) {
+    let msg = error.message;
+    if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/wrong-password' || (msg && msg.toLowerCase().includes('password is invalid'))) {
+      msg = 'Your email or password is incorrect.';
+    }
+    showMessage(msg, 'error');
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Sign In';
+    document.getElementById('password').focus();
+  }
+}
+
+// --- Auto-login logic on popup load ---
+document.addEventListener('DOMContentLoaded', async function() {
   // Check for active session using isLoggedIn only
-  chrome.storage.local.get(['isLoggedIn'], (result) => {
+  chrome.storage.local.get(['isLoggedIn', 'rememberMe', 'rememberMeExpiry', 'rememberedEmail', 'rememberedPassword'], async (result) => {
     if (result.isLoggedIn) {
-      window.location.href = 'main.html';
+      // No longer open main.html in a new tab or close the popup
+      // Optionally, you can show a message or UI for logged-in users here
+      return;
+    }
+    // Wait for Firebase auth state
+    auth.onAuthStateChanged((user) => {
+      if (result.isLoggedIn && user) {
+        safeRedirectToMain();
+        return;
+      }
+      // If not logged in, show login form (do not redirect)
+    });
+    // Auto-login if rememberMe is set and not expired
+    if (result.rememberMe && result.rememberMeExpiry && Date.now() < result.rememberMeExpiry && result.rememberedEmail && result.rememberedPassword) {
+      const email = decodeBase64(result.rememberedEmail);
+      const password = decodeBase64(result.rememberedPassword);
+      const loginBtn = document.getElementById('loginBtn');
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Auto-signing in...';
+      await handleFirebaseLogin(email, password, true);
       return;
     }
   });
@@ -94,12 +198,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const passwordInput = document.getElementById('password');
   const loginBtn = document.getElementById('loginBtn');
   const forgotPasswordLink = document.getElementById('forgotPassword');
+  const rememberMeInput = document.getElementById('rememberMe');
 
   // Handle form submission
   loginForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = usernameInput.value.trim();
     const password = passwordInput.value.trim();
+    const rememberMe = rememberMeInput.checked;
     if (!email) {
       showMessage('Please enter your email', 'error');
       usernameInput.focus();
@@ -112,38 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     loginBtn.disabled = true;
     loginBtn.textContent = 'Signing in...';
-    try {
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-      // Save auth info to local storage (isLoggedIn only)
-      await chrome.storage.local.set({
-        isLoggedIn: true,
-        email: user.email,
-        userUid: user.uid
-      });
-      // Fetch user doc from Firestore and save its id if exists
-      try {
-        const userDoc = await db.collection('userExtensions').doc(user.uid).get();
-        if (userDoc.exists) {
-          await chrome.storage.local.set({ firestoreUserId: userDoc.id });
-        }
-      } catch (firestoreErr) {
-        // Ignore Firestore errors for now
-      }
-      showMessage(`Welcome, ${user.email}!`, 'success');
-      setTimeout(() => {
-        window.location.href = 'main.html';
-      }, 1000);
-    } catch (error) {
-      let msg = error.message;
-      if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/wrong-password' || (msg && msg.toLowerCase().includes('password is invalid'))) {
-        msg = 'Your email or password is incorrect.';
-      }
-      showMessage(msg, 'error');
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'Sign In';
-      passwordInput.focus();
-    }
+    await handleFirebaseLogin(email, password, rememberMe);
   });
 
   // Handle forgot password link
@@ -203,4 +278,11 @@ window.addEventListener('beforeunload', () => {
             eyeOffIcon.style.display = 'none';
         }
     });
+});
+
+// --- Clear credentials on logout ---
+window.addEventListener('storage', function(e) {
+  if (e.key === 'isLoggedIn' && e.newValue === false) {
+    chrome.storage.local.remove(['rememberedEmail', 'rememberedPassword', 'rememberMe', 'rememberMeExpiry']);
+  }
 });

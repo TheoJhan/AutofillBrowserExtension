@@ -16,13 +16,60 @@ if (!firebase.apps.length) {
 document.addEventListener('DOMContentLoaded', function () {
     // 1. Get DOM Elements
     const domainNameElement = document.getElementById('domain-name');
-    const powerButton = document.querySelector('.power-btn');
+    const powerButton = document.querySelector('.ipod-wheel');
     const openDashboardBtn = document.getElementById('openDashboardBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-    const playPauseBtn = document.getElementById('playPauseBtn');
     const statusElement = document.querySelector('.status');
     const planBtn = document.getElementById('planBtn');
     const rememberIndicator = document.getElementById('rememberIndicator');
+    const playPauseBtn2 = document.getElementById('playPauseBtn2');
+    const minusBtn = document.getElementById('minusBtn');
+    const plusBtn = document.getElementById('plusBtn');
+    const abortBtn = document.getElementById('abortBtn');
+    let currentResumeIndex = 0;
+    let currentDomain = '';
+    let resumeIndexKey = '';
+    const indexDisplay = document.createElement('div');
+    indexDisplay.id = 'indexDisplay';
+    indexDisplay.style.fontWeight = 'bold';
+    indexDisplay.style.margin = '8px 0';
+    // Insert index display into connection-info
+    const connectionInfo = document.querySelector('.connection-info');
+    if (connectionInfo) {
+        connectionInfo.appendChild(indexDisplay);
+    }
+    // Helper to get domain from a URL
+    function extractDomain(url) {
+        try {
+            const u = new URL(url);
+            return u.hostname.replace(/^www\./, "");
+        } catch {
+            return '';
+        }
+    }
+    // Load and display the current resumeIndex for the active tab's domain
+    function loadResumeIndexForActiveTab() {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0] && tabs[0].url) {
+                currentDomain = extractDomain(tabs[0].url);
+                resumeIndexKey = `resumeIndex_${currentDomain}`;
+                chrome.storage.local.get([resumeIndexKey], (result) => {
+                    currentResumeIndex = result[resumeIndexKey] || 0;
+                    updateIndexDisplay();
+                });
+            } else {
+                currentDomain = '';
+                resumeIndexKey = '';
+                currentResumeIndex = 0;
+                updateIndexDisplay();
+            }
+        });
+    }
+    function updateIndexDisplay() {
+        indexDisplay.textContent = currentDomain
+            ? `Automation Step Index for ${currentDomain}: ${currentResumeIndex}`
+            : 'No active site detected.';
+    }
 
     // 2. State Management
     let state = {
@@ -40,114 +87,116 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function updateUI(domain) {
-        // Update Power Button and global status
-        if (state.isManual) {
-            powerButton.classList.add('on');
-            statusElement.textContent = 'Status: Manual';
-            powerButton.style.borderColor = '#6effa7';
-            powerButton.style.boxShadow = '0 0 25px rgba(110, 255, 167, 0.7)';
-            playPauseBtn.disabled = false;
+
+    function setAutomationMode(isAuto) {
+        const powerButton = document.querySelector('.power-btn');
+        const statusElement = document.querySelector('.status');
+        if (isAuto) {
+            if (powerButton) {
+                powerButton.classList.add('on');
+                powerButton.style.borderColor = '#6effa7';
+                powerButton.style.boxShadow = '0 0 25px rgba(110, 255, 167, 0.7)';
+            }
+            if (statusElement) {
+                statusElement.textContent = 'Status: Auto';
+            }
         } else {
-            powerButton.classList.remove('on');
-            statusElement.textContent = 'Status: Auto';
-            powerButton.style.borderColor = 'rgba(255, 255, 255, 0.8)';
-            powerButton.style.boxShadow = '0 0 20px rgba(255,255,255,0.2)';
-            playPauseBtn.disabled = true;
-        }
-
-        // Update Play/Pause Button based on the specific domain's state
-        const isPlaying = state.domainStates[domain] === 'playing';
-        const playIcon = playPauseBtn.querySelector('.play-icon');
-        const pauseIcon = playPauseBtn.querySelector('.pause-icon');
-
-        playPauseBtn.classList.toggle('playing', isPlaying);
-
-        if (isPlaying && state.isManual) {
-            playIcon.style.display = 'none';
-            pauseIcon.style.display = 'block';
-            playPauseBtn.title = 'Pause Action';
-        } else {
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
-            playPauseBtn.title = 'Start Action';
+            if (powerButton) {
+                powerButton.classList.remove('on');
+                powerButton.style.borderColor = '';
+                powerButton.style.boxShadow = '';
+            }
+            if (statusElement) {
+                statusElement.textContent = 'Status: Manual';
+            }
         }
     }
 
     // 3. Event Listeners
-    powerButton.addEventListener('click', () => {
-        state.isManual = !state.isManual;
-        
-        // When switching to Auto, we don't clear the saved play state,
-        // so it's remembered if the user switches back to Manual.
-        // The button is simply disabled by the UI update.
-        
-        updateUI(domainNameElement.textContent);
-        saveState();
-    });
+    if (powerButton) {
+        powerButton.addEventListener('click', () => {
+            const isAuto = !powerButton.classList.contains('on');
+            setAutomationMode(isAuto);
+        });
+    }
 
-    playPauseBtn.addEventListener('click', function() {
-        const domain = domainNameElement.textContent;
-        const isCurrentlyPlaying = state.domainStates[domain] === 'playing';
-        
-        if (isCurrentlyPlaying) {
-            // If it's playing, toggle to paused (by removing the state)
-            delete state.domainStates[domain];
-        } else {
-            // If it's paused, toggle to playing
-            state.domainStates[domain] = 'playing';
+    if (openDashboardBtn) {
+        openDashboardBtn.addEventListener('click', () => {
+            chrome.tabs.create({ url: 'https://cb-phaa.web.app/index.html' });
+        });
+    }
+
+    if (planBtn) {
+        planBtn.addEventListener('click', () => {
+            chrome.tabs.create({ url: 'https://cb-phaa.web.app/plan.html'});
+        });
+    }
+
+    // iPod play/pause toggle logic
+    let isPaused = false;
+    function sendAutomationCommand(command) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0]) {
+                chrome.tabs.sendMessage(tabs[0].id, { command });
+            }
+        });
+    }
+    if (playPauseBtn2) {
+        playPauseBtn2.addEventListener('click', function() {
+            if (isPaused) {
+                sendAutomationCommand('resume');
+                isPaused = false;
+            } else {
+                sendAutomationCommand('pause');
+                isPaused = true;
+            }
+        });
+    }
+
+    // Debounce redirect to popup.html to prevent loops
+    let redirectingToPopup = false;
+    function safeRedirectToPopup() {
+        if (!redirectingToPopup) {
+            redirectingToPopup = true;
+            window.location.href = 'popup.html';
         }
+    }
 
-        updateUI(domain);
-        saveState();
-    });
-
-    openDashboardBtn.addEventListener('click', () => {
-        chrome.tabs.create({ url: 'https://cb-phaa.web.app/index.html' });
-    });
-
-    planBtn.addEventListener('click', () => {
-        chrome.tabs.create({ url: 'https://cb-phaa.web.app/plan.html'});
-    });
-
-    logoutBtn.addEventListener('click', async () => {
-        // Sign out from Firebase Auth
-        if (firebase && firebase.auth) {
-            firebase.auth().signOut().then(async () => {
-                // Report logout to background script first
-                chrome.runtime.sendMessage({
-                    action: 'reportConnectionStatus'
-                }, async () => {
-                    // Clear all auth/session data on logout
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            if (firebase && firebase.auth) {
+                firebase.auth().signOut().then(async () => {
+                    chrome.runtime.sendMessage({
+                        action: 'reportConnectionStatus'
+                    }, async () => {
+                        chrome.storage.local.remove([
+                            'isLoggedIn', 'username', 'appState', 'rememberMe',
+                            'userUid', 'firestoreUserId', 'email', 'sessionActive', 'firebaseAuthToken', 'tokenExpiry', 'loginTime'
+                        ], async () => {
+                            await handleLogoutCommand();
+                            safeRedirectToPopup();
+                        });
+                    });
+                }).catch(async (error) => {
                     chrome.storage.local.remove([
                         'isLoggedIn', 'username', 'appState', 'rememberMe',
                         'userUid', 'firestoreUserId', 'email', 'sessionActive', 'firebaseAuthToken', 'tokenExpiry', 'loginTime'
                     ], async () => {
                         await handleLogoutCommand();
-                        window.location.href = 'popup.html';
+                        safeRedirectToPopup();
                     });
                 });
-            }).catch(async (error) => {
-                // Even if signOut fails, proceed with local cleanup
+            } else {
                 chrome.storage.local.remove([
                     'isLoggedIn', 'username', 'appState', 'rememberMe',
                     'userUid', 'firestoreUserId', 'email', 'sessionActive', 'firebaseAuthToken', 'tokenExpiry', 'loginTime'
                 ], async () => {
                     await handleLogoutCommand();
-                    window.location.href = 'popup.html';
+                    safeRedirectToPopup();
                 });
-            });
-        } else {
-            // Fallback: just clear storage
-            chrome.storage.local.remove([
-                'isLoggedIn', 'username', 'appState', 'rememberMe',
-                'userUid', 'firestoreUserId', 'email', 'sessionActive', 'firebaseAuthToken', 'tokenExpiry', 'loginTime'
-            ], async () => {
-                await handleLogoutCommand();
-                window.location.href = 'popup.html';
-            });
-        }
-    });
+            }
+        });
+    }
 
     // 4. Initialization
     async function getCurrentDomain() {
@@ -167,10 +216,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function initialize() {
-        // Check if logged in
         const loginData = await new Promise(resolve => chrome.storage.local.get('isLoggedIn', resolve));
         if (!loginData.isLoggedIn) {
-            window.location.href = 'popup.html';
+            safeRedirectToPopup();
             return;
         }
 
@@ -185,22 +233,90 @@ document.addEventListener('DOMContentLoaded', function () {
             rememberIndicator.style.display = 'flex';
         }
 
-        // Show idbox if available
-        const idboxDisplay = document.getElementById('idboxDisplay');
-        if (stateData.formData && stateData.formData.idbox) {
-            idboxDisplay.textContent = `ID: ${stateData.formData.idbox}`;
-        } else {
-            idboxDisplay.textContent = '';
-        }
+        // Show idbox if available from Firestore
+        await fetchAndDisplayIdbox();
 
         // Get current domain and update the UI with loaded state
         const domain = await getCurrentDomain();
         domainNameElement.textContent = domain;
         domainNameElement.title = domain;
-        updateUI(domain);
+       
     }
 
-    initialize();
+    // Function to fetch latest campaign data from Firestore and display only the idbox
+    async function fetchAndDisplayIdbox(retryCount = 0) {
+        const maxRetries = 3;
+        const idboxDisplay = document.getElementById('idboxDisplay');
+    
+        try {
+            const { userUid, isLoggedIn } = await new Promise(resolve => {
+                chrome.storage.local.get(['userUid', 'isLoggedIn'], resolve);
+            });
+    
+            if (!userUid || !isLoggedIn) {
+                idboxDisplay.textContent = '';
+                return;
+            }
+    
+            const currentUser = firebase.auth().currentUser;
+    
+            if (!currentUser) {
+                if (retryCount < maxRetries) {
+                    return setTimeout(() => fetchAndDisplayIdbox(retryCount + 1), 500 * (retryCount + 1));
+                }
+                idboxDisplay.textContent = 'Authentication error. Please re-login.';
+                return;
+            }
+    
+            const db = firebase.firestore();
+            const campaignSnapshot = await db.collection('CampaignData')
+                .where('userId', '==', userUid)
+                .orderBy('createdAt', 'desc')
+                .limit(1)
+                .get();
+    
+            if (campaignSnapshot.empty) {
+                idboxDisplay.textContent = 'No idbox found.';
+                chrome.storage.local.set({ campaignData: {} });
+                return;
+            }
+    
+            const doc = campaignSnapshot.docs[0];
+            const campaign = doc.data();
+            const docId = doc.id;
+    
+            // Save campaign to local storage using the docId as key
+            chrome.storage.local.set({ campaignData: { [docId]: campaign } });
+    
+            // ✅ FIX: Safely access nested idBox under campaignData
+            const idBoxValue = campaign?.campaignData?.idBox;
+    
+            idboxDisplay.textContent = idBoxValue
+                ? `ID: ${idBoxValue}`
+                : 'No idbox in campaign.';
+    
+        } catch (error) {
+            console.error("📛 Error loading campaign:", error);
+            if (retryCount < maxRetries) {
+                return setTimeout(() => fetchAndDisplayIdbox(retryCount + 1), 500 * (retryCount + 1));
+            }
+            idboxDisplay.textContent = 'Error loading idbox.';
+        }
+    }
+    
+    
+
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          initialize();
+        } else {
+          chrome.storage.local.get('isLoggedIn', (data) => {
+            if (!data.isLoggedIn) {
+              safeRedirectToPopup();
+            }
+          });
+        }
+    });
 
     // Live theme sync
     chrome.storage.onChanged.addListener((changes, area) => {
@@ -269,14 +385,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Patch login and logout flows
-    // In your login success (after storing userUid/email):
-    // await handleLoginCommand();
-    // In your logout handler (after signOut):
-    // await handleLogoutCommand();
+    // On dashboard load, set to auto mode
+    setAutomationMode(true);
 
-    // Now, integrate these calls in the actual login and logout logic below.
+    function triggerAutomationWithIndex() {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0]) {
+                chrome.tabs.sendMessage(tabs[0].id, {
+                    command: "manualSetResumeIndex",
+                    resumeIndex: currentResumeIndex
+                });
+            }
+        });
+    }
+    if (plusBtn) {
+        plusBtn.addEventListener('click', () => {
+            if (!resumeIndexKey) return;
+            currentResumeIndex++;
+            chrome.storage.local.set({ [resumeIndexKey]: currentResumeIndex }, () => {
+                updateIndexDisplay();
+                triggerAutomationWithIndex();
+            });
+        });
+    }
+    if (minusBtn) {
+        minusBtn.addEventListener('click', () => {
+            if (!resumeIndexKey) return;
+            if (currentResumeIndex > 0) currentResumeIndex--;
+            chrome.storage.local.set({ [resumeIndexKey]: currentResumeIndex }, () => {
+                updateIndexDisplay();
+                triggerAutomationWithIndex();
+            });
+        });
+    }
 
-    // Patch login and logout event handlers
-    // (Find the login and logout event handlers and insert the calls)
-}); 
+    // Initial load
+    loadResumeIndexForActiveTab();
+
+    if (abortBtn) {
+        abortBtn.addEventListener('click', () => {
+            sendAutomationCommand('abort');
+        });
+    }
+
+});     

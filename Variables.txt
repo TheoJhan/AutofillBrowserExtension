@@ -1,0 +1,104 @@
+Action
+	"fill"
+	"click"
+	valueKey="NextButtonSave"-- special function to be use in order to change tab
+	"uploadImages"
+	"initClearCheckbox" - clearning all checkbox on the page, call this before the sequence start, no element required
+						- {
+							  "action": "initClearCheckbox"
+						   }
+	"tickPaymentMethods" - tick payment methods individual no element required
+						- {
+							  "action": "tickPaymentMethods"
+						   }
+	"tickSubcategory" - tick subcategory checkbox based on subcategory value in campaign data, exact match only
+						- {
+							  "action": "tickSubcategory"
+						   }
+	"consolidateData" - consolidate data from campaignData based on domain configuration in consoSetup.json
+						- {
+							  "action": "consolidateData"
+						   }
+	"injectToFroala" - inject consolidated data directly to Froala rich text editor
+						- {
+							  "action": "injectToFroala"
+						   }
+	"richFill" - enhanced to support consolidated data injection
+						- {
+							  "action": "richFill",
+							  "valueKey": "consolidatedData" // or "value": "consolidatedData"
+						   }
+	"waitForPopup" - wait for an element to appear in DOM (popups, modals, etc.)
+						- {
+							  "action": "waitForPopup",
+							  "selector": ".modal-dialog",
+							  "value": "15000" // optional timeout in ms (default: 10000)
+						   }
+	
+valueKey:
+	"BL Report ID:":                "idBox",
+    "Completion Date:":             "completionDateBox",
+    "Business Name:":               "businessNameBox",
+    "Short Business Name:":         "shortBusinessNameBox",
+    "Website Address:":             "websiteBox",
+    "Main Business Category:":      "mainCategoryBox",
+    "Extra Business Categories:":   "extraCategoriesBox",
+    "Address:":                     "addressBox",
+    "Contact First Name:":          "contactFirstNameBox",
+    "Contact Last Name:":           "contactLastNameBox",
+    "Contact Email:":               "contactEmailBox",
+    "Contact Telephone:":           "contactTelephoneBox",
+    "Mobile Number:":               "mobileNumberBox",
+    "Fax Number:":                  "faxNumberBox",
+    "Short Description:":           "shortDescriptionBox",
+    "Long Description:":            "longDescriptionBox",
+    "List of Services:":            "servicesBox",
+    "Number of Employees:":         "employeesBox",
+    "Business Hours:":              "businessHoursBox",
+	                                 monFull
+									 monAm
+									 monPm
+									 tueFull
+									 tueAm
+									 tuePm
+									 wedFull
+									 wedAm
+									 wedPm
+									 thuFull
+									 thuAm
+									 thuPm
+									 friFull
+									 friAm
+									 friPm
+									 satFull
+									 satAm
+									 satPm
+									 sunFull
+									 sunAm
+									 sunPm
+    "Year of Company Formation:":   "yearFormationBox",
+    "Date of Company Formation:":   "yearFormationBox",
+    "Payment Methods:":             "paymentMethodsBox",
+    "Facebook :":                   "facebookBox",
+    "Twitter :":                    "twitterBox",
+    "LinkedIn :":                   "linkedinBox",
+    "Pinterest :":                  "pinterestBox",
+    "Instagram :":                  "instagramBox",
+    "YouTube :":                    "youtubeBox",
+    "TikTok :":                     "tiktokBox",
+    "Email:":                       "campEmail",
+    "Username:":                    "campUsername",
+    "Password(email):":             "passEmail",
+    "Password(directories):":       "passDirectory"
+	Latitude:                        latBox	
+	Longtitude:                      longBox
+	Address Line 1:                  line1
+  	Address Line 2:                  line2 
+	City: 							 city
+	State:							 state
+	StateAbbreviation:               stateAbbr - 2 letters
+	Country:                         country
+	CountryAbbreviation:             countryAbbr - 2 letters
+	
+
+	

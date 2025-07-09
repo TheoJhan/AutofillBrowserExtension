@@ -11,7 +11,7 @@
     "128": "icons/CB-ph-128.png"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "main.html",
     "default_icon": {
       "16": "icons/CB-ph-16.png",
       "48": "icons/CB-ph-48.png",
@@ -33,20 +33,9 @@
         "default": "Ctrl+Shift+F"
       },
       "description": "Run automation manually"
-    },
-    "open-debug": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+D"
-      },
-      "description": "Open debug console"
     }
   },
   "content_scripts": [
-    {
-      "matches": ["https://cb-phaa.web.app/*"],
-      "js": ["content-bridge.js"],
-      "run_at": "document_start"
-    },
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],

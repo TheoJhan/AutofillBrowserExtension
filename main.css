@@ -99,13 +99,24 @@ body {
 .dashboard-main {
     flex-grow: 1;
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
+    justify-content: flex-start;
     align-items: center;
-    padding: 20px 24px;
+    padding: 10px 14px;
     z-index: 1;
 }
 
 .connection-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    margin-left: 0;
+    word-break: break-word;
+    white-space: normal;
+    height: 100%;
+    /* Remove any vertical margin or padding that could cause misalignment */
     text-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
@@ -182,6 +193,12 @@ body {
 
 .power-btn-container {
     position: relative;
+    margin-left: 5px;
+    margin-right: 1px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 
 .power-btn {
@@ -267,4 +284,272 @@ body {
     word-break: break-all;
     text-align: left;
     padding-left: 2px;
+}
+
+/* Campaign Data Styles */
+.campaign-data-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    margin-top: 8px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.campaign-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 6px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.campaign-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.campaign-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.campaign-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.campaign-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.campaign-id {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1px;
+}
+
+.campaign-date {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.campaign-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.campaign-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.campaign-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.campaign-btn svg {
+    width: 12px;
+    height: 12px;
+    fill: currentColor;
+}
+
+.select-btn {
+    background: rgba(76, 175, 80, 0.3);
+}
+
+.select-btn:hover {
+    background: rgba(76, 175, 80, 0.5);
+}
+
+.view-btn {
+    background: rgba(33, 150, 243, 0.3);
+}
+
+.view-btn:hover {
+    background: rgba(33, 150, 243, 0.5);
+}
+
+.selected-campaign {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(76, 175, 80, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    margin-top: 8px;
+}
+
+.selected-campaign-info {
+    flex: 1;
+}
+
+.selected-campaign-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 2px;
+}
+
+.selected-campaign-id {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.change-campaign-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.change-campaign-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.change-campaign-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.no-campaign-data {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    padding: 12px;
+    font-style: italic;
+}
+
+.error-message {
+    font-size: 11px;
+    color: #ff6b6b;
+    text-align: center;
+    padding: 8px;
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.retry-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: white;
+    transform: scale(1.05);
+}
+
+/* iPod-style wheel */
+.ipod-wheel {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    background: transparent;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.35);
+    box-shadow: 0 0 32px 4px rgba(110,255,167,0.15), 0 0 0 2px rgba(255,255,255,0.08) inset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ipod-btn {
+    position: absolute;
+    width: 33px;
+    height: 33px;
+    background: rgba(30,30,30,0.18);
+    border: 2px solid rgba(255,255,255,0.18);
+    border-radius: 50%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+    z-index: 2;
+}
+.ipod-btn:hover {
+    background: rgba(110,255,167,0.18);
+    border-color: #6effa7;
+    box-shadow: 0 0 12px 2px #6effa7;
+}
+.ipod-btn-top    { top: 8px; left: 50%; transform: translateX(-50%); }
+.ipod-btn-bottom { bottom: 8px; left: 50%; transform: translateX(-50%); }
+.ipod-btn-left   { left: 8px; top: 50%; transform: translateY(-50%); }
+.ipod-btn-right  { right: 8px; top: 50%; transform: translateY(-50%); }
+
+.ipod-center-glow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 55px;
+    height: 55px;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+    box-shadow: 0 0 32px 8px #6effa7, 0 0 0 2px rgba(255,255,255,0.12) inset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+.ipod-logo {
+    width: 33px;
+    height: 33px;
+    filter: drop-shadow(0 0 8px #6effa7) drop-shadow(0 0 2px #fff);
+    border-radius: 50%;
+    background: transparent;
 } 

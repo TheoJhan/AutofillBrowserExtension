@@ -1,4 +1,29 @@
-[{"action":"fill","selector":"#signup_free-element-11","valueKey":"campEmail"},{"action":"fill","selector":"#signup_free-element-12","valueKey":"campEmail"},{"action":"fill","selector":"#signup_free-element-13","valueKey":"passDirectory"},{"action":"fill","selector":"#signup_free-element-14","valueKey":"passDirectory"},
+[{
+	"action":"fill",
+	"selector":"#signup_free-element-11",
+	"valueKey":"campEmail"
+},
+{
+	"action":"fill",
+	"selector":"#signup_free-element-12",
+	"valueKey":"campEmail"
+},
+{
+	"action":"fill",
+	"selector":"#signup_free-element-13",
+	"valueKey":"passDirectory"
+},
+{
+	"action":"fill",
+	"selector":"#signup_free-element-14",
+	"valueKey":"passDirectory"
+	},
+	 {
+    "action": "click",
+    "selector": ".required",
+    "valueKey": ""
+  },
+
   {
     "action": "click",
     "selector": ".btn.btn-block.btn-warning.bold",

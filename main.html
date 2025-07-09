@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="libs/firebase-app-compat.js"></script>
     <script src="libs/firebase-auth-compat.js"></script>
+    <script src="libs/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -30,18 +31,29 @@
                 <div class="status">Status: Auto</div>
                 <div class="location">
                     <h2 id="domain-name">loading...</h2>
-                    <button class="play-pause-btn" id="playPauseBtn" title="Start Action" disabled>
-                        <svg class="play-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
-                        <svg class="pause-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
-                    </button>
                 </div>
                 <div class="sub-location">Current Site</div>
                 <div id="idboxDisplay" class="idbox-display"></div>
             </div>
             <div class="power-btn-container">
-                <button class="power-btn">
-                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"></path></svg>
-                </button>
+                <div class="ipod-wheel">
+                    <button class="ipod-btn ipod-btn-top" id="abortBtn" title="Abort">
+                        <svg width="20" height="20" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" fill="currentColor"/></svg>
+                    </button>
+                    <button class="ipod-btn ipod-btn-left" id="minusBtn" title="Minus">
+                        <svg width="20" height="20" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
+                    </button>
+                    <button class="ipod-btn ipod-btn-right" id="plusBtn" title="Plus">
+                        <svg width="20" height="20" viewBox="0 0 24 24"><rect x="11" y="5" width="2" height="14" rx="1" fill="currentColor"/><rect x="5" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
+                    </button>
+                    <button class="ipod-btn ipod-btn-bottom" id="playPauseBtn2" title="Play/Pause">
+                        <svg class="play-icon" width="20" height="20" viewBox="0 0 24 24"><polygon points="8,5 8,19 19,12" fill="currentColor"/></svg>
+                        <svg class="pause-icon" width="20" height="20" viewBox="0 0 24 24" style="display:none"><rect x="6" y="5" width="4" height="14" fill="currentColor"/><rect x="14" y="5" width="4" height="14" fill="currentColor"/></svg>
+                    </button>
+                    <div class="ipod-center-glow">
+                        <img src="icons/CB-ph-48.png" alt="Logo" class="ipod-logo" />
+                    </div>
+                </div>
             </div>
         </main>
         <footer class="dashboard-footer">
