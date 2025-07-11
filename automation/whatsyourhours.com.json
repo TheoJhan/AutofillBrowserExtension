@@ -1,0 +1,123 @@
+[
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-13",
+    "value": "Google"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-14",
+    "valueKey": "businessNameBox",
+	  "label": "Business Name"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-15",
+    "valueKey": "line1",
+	  "label": "Address line 1"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-18",
+    "valueKey": "line2",
+	  "label": "Address line 2"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-19",
+    "valueKey": "city",
+	  "label": "City"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-20",
+    "valueKey": "state",
+    "label": "State"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-22",
+    "valueKey": "zipcode",
+    "label": "Zipcode"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-23",
+    "valueKey": "country",
+    "label": "Country"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-24",
+    "valueKey": "countryAbbr", 
+    "label": "Country Abbreviation" 
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-25",
+    "valueKey": "websiteBox"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-26",
+    "valueKey": "contactTelephoneBox",
+    "label": "Contact Telephone"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-27",
+    "valueKey": "contactFirstNameBox",
+    "label": "Contact First Name"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-28",
+    "valueKey": "contactLastNameBox",
+    "label": "Contact Last Name"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-29",
+    "valueKey": "campEmail",
+    "label": "Campaign Email"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-30",
+    "valueKey": "campEmail",
+    "label": "Campaign Email Confirm"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-31",
+    "valueKey": "passDirectory",
+    "label": "Password Directory"
+  },
+  {
+    "action": "fill",
+    "selector": "#signup_free-element-32",
+    "valueKey": "passDirectory",
+    "label": "Password Directory"
+  },
+  {
+    "action": "click",
+    "selector": "[name=\"consent_history[1]\"]",
+    "label": "Consent History 1"
+  },
+  {
+    "action": "click",
+    "selector": "[name=\"consent_history[2]\"]",
+    "label": "Consent History 2"
+  },
+  {
+    "action": "click",
+    "selector": ".recaptcha-checkbox-borderAnimation",
+    "label": "Recaptcha"
+  },
+  {
+    "action": "click",
+    "selector": "#signup_free-element-36",
+    "valueKey": "NextButtonSave",
+    "label": "Next"
+  }
+]

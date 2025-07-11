@@ -99,6 +99,6 @@ valueKey:
 	StateAbbreviation:               stateAbbr - 2 letters
 	Country:                         country
 	CountryAbbreviation:             countryAbbr - 2 letters
-	
+	Zipcode 						 zipcode
 
 	

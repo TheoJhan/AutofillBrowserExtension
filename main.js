@@ -53,11 +53,20 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tabs[0] && tabs[0].url) {
                 currentDomain = extractDomain(tabs[0].url);
                 resumeIndexKey = `resumeIndex_${currentDomain}`;
+                console.log(`🌐 Loading index for domain: ${currentDomain}, key: ${resumeIndexKey}`);
+                
                 chrome.storage.local.get([resumeIndexKey], (result) => {
-                    currentResumeIndex = result[resumeIndexKey] || 0;
+                    if (chrome.runtime.lastError) {
+                        console.error("❌ Error loading resume index:", chrome.runtime.lastError.message);
+                        currentResumeIndex = 0;
+                    } else {
+                        currentResumeIndex = result[resumeIndexKey] || 0;
+                        console.log(`✅ Loaded resume index: ${currentResumeIndex}`);
+                    }
                     updateIndexDisplay();
                 });
             } else {
+                console.log("ℹ️ No active tab or URL found");
                 currentDomain = '';
                 resumeIndexKey = '';
                 currentResumeIndex = 0;
@@ -66,9 +75,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     function updateIndexDisplay() {
-        indexDisplay.textContent = currentDomain
-            ? `Automation Step Index for ${currentDomain}: ${currentResumeIndex}`
-            : 'No active site detected.';
+        if (!currentDomain) {
+            indexDisplay.textContent = 'No active site detected.';
+            return;
+        }
+        // Try to load the automation JSON for the current domain
+        const automationFile = `automation/${currentDomain}.json`;
+        fetch(chrome.runtime.getURL(automationFile))
+            .then(response => response.json())
+            .then(steps => {
+                const step = steps[currentResumeIndex];
+                const label = step && step.label ? step.label : null;
+                indexDisplay.textContent = label
+                    ? `Automation Step for ${currentDomain}: ${label}`
+                    : `Automation Step Index for ${currentDomain}: ${currentResumeIndex}`;
+            })
+            .catch(() => {
+                // fallback if file or label not found
+                indexDisplay.textContent = `Automation Step Index for ${currentDomain}: ${currentResumeIndex}`;
+            });
     }
 
     // 2. State Management
@@ -137,7 +162,19 @@ document.addEventListener('DOMContentLoaded', function () {
     function sendAutomationCommand(command) {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs[0]) {
-                chrome.tabs.sendMessage(tabs[0].id, { command });
+                chrome.tabs.sendMessage(tabs[0].id, { command }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        console.warn("⚠️ Command failed:", chrome.runtime.lastError.message);
+                        return;
+                    }
+                    if (response && response.success) {
+                        console.log(`✅ Command '${command}' executed successfully:`, response);
+                    } else {
+                        console.warn(`⚠️ Command '${command}' failed:`, response);
+                    }
+                });
+            } else {
+                console.warn("⚠️ No active tab found for command:", command);
             }
         });
     }
@@ -198,22 +235,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 4. Initialization
-    async function getCurrentDomain() {
-        try {
-            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (tabs && tabs[0] && tabs[0].url) {
-                const url = new URL(tabs[0].url);
-                if (url.protocol === 'file:') return 'Local File';
-                if (url.protocol.startsWith('chrome-extension:')) return 'Extension Page';
-                return url.hostname.replace('www.', '');
-            }
-            return 'No Tab';
-        } catch (e) {
-            console.error(e);
-            return 'Error';
-        }
-    }
 
     async function initialize() {
         const loginData = await new Promise(resolve => chrome.storage.local.get('isLoggedIn', resolve));
@@ -236,10 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show idbox if available from Firestore
         await fetchAndDisplayIdbox();
 
-        // Get current domain and update the UI with loaded state
-        const domain = await getCurrentDomain();
-        domainNameElement.textContent = domain;
-        domainNameElement.title = domain;
+
        
     }
 
@@ -278,6 +296,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (campaignSnapshot.empty) {
                 idboxDisplay.textContent = 'No idbox found.';
                 chrome.storage.local.set({ campaignData: {} });
+                chrome.storage.local.set({ base64Data: {} }); // Clear images if no campaign
                 return;
             }
     
@@ -287,6 +306,11 @@ document.addEventListener('DOMContentLoaded', function () {
     
             // Save campaign to local storage using the docId as key
             chrome.storage.local.set({ campaignData: { [docId]: campaign } });
+    
+            // ⭐️ NEW: Save base64Data/images to local storage if present
+            // Try both possible field names
+            const base64Data = campaign.base64Data || campaign.images || {};
+            chrome.storage.local.set({ base64Data });
     
             // ✅ FIX: Safely access nested idBox under campaignData
             const idBoxValue = campaign?.campaignData?.idBox;
@@ -391,39 +415,153 @@ document.addEventListener('DOMContentLoaded', function () {
     function triggerAutomationWithIndex() {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs[0]) {
+                console.log(`🔄 Sending manualSetResumeIndex command with index: ${currentResumeIndex}`);
                 chrome.tabs.sendMessage(tabs[0].id, {
                     command: "manualSetResumeIndex",
                     resumeIndex: currentResumeIndex
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        console.warn("⚠️ Error sending manualSetResumeIndex:", chrome.runtime.lastError.message);
+                    } else if (response && response.success) {
+                        console.log("✅ Content script confirmed index update");
+                    } else {
+                        console.warn("⚠️ Content script didn't respond to index update");
+                    }
                 });
+            } else {
+                console.warn("⚠️ No active tab found for index update");
             }
         });
     }
     if (plusBtn) {
         plusBtn.addEventListener('click', () => {
-            if (!resumeIndexKey) return;
-            currentResumeIndex++;
-            chrome.storage.local.set({ [resumeIndexKey]: currentResumeIndex }, () => {
-                updateIndexDisplay();
-                triggerAutomationWithIndex();
+            console.log("➕ Plus button clicked");
+            if (!resumeIndexKey) {
+                console.warn("⚠️ No resume index key available");
+                return;
+            }
+            
+            // Check if automation is running
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                if (tabs[0]) {
+                    chrome.tabs.sendMessage(tabs[0].id, { command: "getAutomationStatus" }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            console.warn("⚠️ Error checking automation status:", chrome.runtime.lastError.message);
+                            // Continue anyway if we can't check status
+                        }
+                        
+                        if (response && response.isRunning) {
+                            alert("⚠️ Automation is currently running. Please abort the automation first before changing the index.");
+                            return;
+                        }
+                        
+                        // Proceed with index change
+                        currentResumeIndex++;
+                        console.log(`✅ Incrementing index to: ${currentResumeIndex}`);
+                        chrome.storage.local.set({ [resumeIndexKey]: currentResumeIndex }, () => {
+                            if (chrome.runtime.lastError) {
+                                console.error("❌ Error saving index:", chrome.runtime.lastError.message);
+                            } else {
+                                console.log(`✅ Index saved: ${currentResumeIndex}`);
+                            }
+                            updateIndexDisplay();
+                            triggerAutomationWithIndex();
+                        });
+                    });
+                } else {
+                    console.warn("⚠️ No active tab found");
+                }
             });
         });
     }
+    
     if (minusBtn) {
         minusBtn.addEventListener('click', () => {
-            if (!resumeIndexKey) return;
-            if (currentResumeIndex > 0) currentResumeIndex--;
-            chrome.storage.local.set({ [resumeIndexKey]: currentResumeIndex }, () => {
-                updateIndexDisplay();
-                triggerAutomationWithIndex();
+            console.log("➖ Minus button clicked");
+            if (!resumeIndexKey) {
+                console.warn("⚠️ No resume index key available");
+                return;
+            }
+            
+            // Check if automation is running
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                if (tabs[0]) {
+                    chrome.tabs.sendMessage(tabs[0].id, { command: "getAutomationStatus" }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            console.warn("⚠️ Error checking automation status:", chrome.runtime.lastError.message);
+                            // Continue anyway if we can't check status
+                        }
+                        
+                        if (response && response.isRunning) {
+                            alert("⚠️ Automation is currently running. Please abort the automation first before changing the index.");
+                            return;
+                        }
+                        
+                        // Proceed with index change
+                        if (currentResumeIndex > 0) {
+                            currentResumeIndex--;
+                            console.log(`✅ Decrementing index to: ${currentResumeIndex}`);
+                            chrome.storage.local.set({ [resumeIndexKey]: currentResumeIndex }, () => {
+                                if (chrome.runtime.lastError) {
+                                    console.error("❌ Error saving index:", chrome.runtime.lastError.message);
+                                } else {
+                                    console.log(`✅ Index saved: ${currentResumeIndex}`);
+                                }
+                                updateIndexDisplay();
+                                triggerAutomationWithIndex();
+                            });
+                        } else {
+                            console.log("ℹ️ Index already at minimum (0)");
+                        }
+                    });
+                } else {
+                    console.warn("⚠️ No active tab found");
+                }
             });
         });
     }
+
+    // Function to update button states based on automation status
+    function updateButtonStates(isRunning) {
+        if (plusBtn) {
+            plusBtn.disabled = isRunning;
+            plusBtn.style.opacity = isRunning ? '0.5' : '1';
+            plusBtn.style.cursor = isRunning ? 'not-allowed' : 'pointer';
+        }
+        if (minusBtn) {
+            minusBtn.disabled = isRunning;
+            minusBtn.style.opacity = isRunning ? '0.5' : '1';
+            minusBtn.style.cursor = isRunning ? 'not-allowed' : 'pointer';
+        }
+    }
+
+    // Listen for automation status changes from content script
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === 'automationStatusChanged') {
+            updateButtonStates(request.isRunning);
+        }
+    });
 
     // Initial load
     loadResumeIndexForActiveTab();
 
+    // Listen for tab changes to update index display
+    chrome.tabs.onActivated.addListener(() => {
+        console.log("🔄 Tab activated, updating index display");
+        loadResumeIndexForActiveTab();
+    });
+
+    // Listen for tab updates to refresh index when URL changes
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+        if (changeInfo.status === 'complete' && tab.active) {
+            console.log("🔄 Tab updated, refreshing index display");
+            loadResumeIndexForActiveTab();
+        }
+    });
+
     if (abortBtn) {
         abortBtn.addEventListener('click', () => {
+            console.log("🛑 Abort button clicked");
             sendAutomationCommand('abort');
         });
     }

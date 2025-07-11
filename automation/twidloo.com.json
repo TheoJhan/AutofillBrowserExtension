@@ -1,194 +1,252 @@
 [{
 	"action":"fill",
 	"selector":"#signup_free-element-11",
-	"valueKey":"campEmail"
+	"valueKey":"campEmail",
+  "label":"Email"
 },
 {
 	"action":"fill",
 	"selector":"#signup_free-element-12",
-	"valueKey":"campEmail"
+	"valueKey":"campEmail",
+  "label":"Email"
 },
 {
 	"action":"fill",
 	"selector":"#signup_free-element-13",
-	"valueKey":"passDirectory"
+	"valueKey":"passDirectory",
+  "label":"Password"
 },
 {
 	"action":"fill",
 	"selector":"#signup_free-element-14",
-	"valueKey":"passDirectory"
+	"valueKey":"passDirectory",
+  "label":"Confirm Password"
 	},
 	 {
     "action": "click",
     "selector": ".required",
-    "valueKey": ""
+    "valueKey": "",
+    "label":"Click for captcha"
   },
 
   {
     "action": "click",
     "selector": ".btn.btn-block.btn-warning.bold",
-    "valueKey": "NextButtonSave"
+    "valueKey": "NextButtonSave",
+    "label":"Contact Details"
   },
 
   {
     "action": "fill",
     "selector": "[name=\"listing_type\"]",
-    "value": "Company"
+    "value": "Company",
+    "label":"Type of Listing"
   },
   {
     "action": "fill",
     "selector": "[name=\"profession_id\"]",
-    "value": "profession_id"
+    "value": "profession_id",
+    "label":"Best Describes You"
   },
   {
     "action": "fill",
     "selector": "[name=\"first_name\"]",
-    "valueKey": "contactFirstNameBox"
+    "valueKey": "contactFirstNameBox",
+    "label":"First Name"
   },
   {
     "action": "fill",
     "selector": "[name=\"last_name\"]",
-    "valueKey": "contactLastNameBox"
+    "valueKey": "contactLastNameBox",
+    "label":"Last Name"
   },
   {
     "action": "fill",
     "selector": "[name=\"email\"]",
-    "valueKey": "campEmail"
+    "valueKey": "campEmail",
+    "label":"Email"
   },
   {
     "action": "fill",
     "selector": "[name=\"phone_number\"]",
-    "valueKey": "contactTelephoneBox"
+    "valueKey": "contactTelephoneBox",
+    "label":"Phone Number"
   },
   {
     "action": "fill",
     "selector": "[name=\"company\"]",
-    "valueKey": "businessNameBox"
+    "valueKey": "businessNameBox",
+    "label":"Business Name"
   },
   {
     "action": "fill",
     "selector": "[name=\"address1\"]",
-    "valueKey": "line1"
+    "valueKey": "line1",
+    "label":"Address Line 1"
   },
   {
     "action": "fill",
     "selector": "[name=\"address2\"]",
-    "valueKey": "line2"
+    "valueKey": "line2",
+    "label":"Address Line 2"
   },
   {
     "action": "fill",
     "selector": "[name=\"city\"]",
-    "valueKey": "city"
+    "valueKey": "city",
+    "label":"City"
   },
   {
     "action": "fill",
     "selector": "[name=\"state_ln\"]",
-    "valueKey": "state"
+    "valueKey": "state",
+    "label":"State"
   },
   {
     "action": "fill",
     "selector": "[name=\"country_ln\"]",
-    "valueKey": "country"
+    "valueKey": "country",
+    "label":"Country"
   },
   {
     "action": "fill",
     "selector": "[name=\"country_code\"]",
-    "valueKey": "countryabbv"
+    "valueKey": "countryabbv",
+    "label":"Country Code"
   },
   {
     "action": "fill",
     "selector": "[name=\"zip_code\"]",
-    "valueKey": "zipcode"
+    "valueKey": "zipcode",
+    "label":"Zip Code"
   },
   {
     "action": "fill",
     "selector": "[name=\"website\"]",
-    "valueKey": "websiteBox"
+    "valueKey": "websiteBox",
+    "label":"Website"
   },
   {
     "action": "fill",
     "selector": "[name=\"facebook\"]",
-    "valueKey": "facebookBox"
+    "valueKey": "facebookBox",
+    "label":"Facebook"
   },
   {
     "action": "fill",
     "selector": "[name=\"twitter\"]",
-    "valueKey": "twitterBox"
+    "valueKey": "twitterBox",
+    "label":"Twitter"
   },
   {
     "action": "fill",
     "selector": "[name=\"linkedin\"]",
-    "valueKey": "linkedinBox"
+    "valueKey": "linkedinBox",
+    "label":"LinkedIn"
   },
   {
     "action": "fill",
     "selector": "[name=\"youtube\"]",
-    "valueKey": "youtubeBox"
+    "valueKey": "youtubeBox",
+    "label":"YouTube"
   },
   {
     "action": "fill",
     "selector": "[name=\"instagram\"]",
-    "valueKey": "instagramBox"
+    "valueKey": "instagramBox",
+    "label":"Instagram"
   },
   {
     "action": "fill",
     "selector": "[name=\"pinterest\"]",
-    "valueKey": "pinterestBox"
+    "valueKey": "pinterestBox",
+    "label":"Pinterest"
   },
   {
     "action": "fill",
     "selector": "[name=\"tiktok\"]",
-    "valueKey": "tiktokBox"
+    "valueKey": "tiktokBox",
+    "label":"TikTok"
   },
   {
     "action": "click",
     "selector": "#member_contact_details_110-element-46",
-    "valueKey": "NextButtonSave"
+    "valueKey": "NextButtonSave",
+    "label":"Next"
   },
   {
     "action": "click",
     "selector": ".btn.btn-lg.btn-primary.change-current-logo",
-    "valueKey": "UploadButton"
+    "valueKey": "UploadButton",
+    "label":"Upload Logo"
   },
   {
     "action": "uploadImages",
     "selector": "#logo-img-upload-input",
-    "valueKey": "logoBox"
+    "valueKey": "logoBox",
+    "label":"Logo"
   },
   {
     "action": "click",
     "selector": ".btn.btn-primary.bold.upload-logo.col-md-8",
-    "valueKey": "UploadButtonSave"
+    "valueKey": "UploadButtonSave",
+    "label":"Upload Logo",
+    "delay": 3000
   },
     {
     "action": "click",
     "selector": ".btn.btn-success.btn-lg.btn-block",
-    "valueKey": "NextButtonSave"
+    "valueKey": "NextButtonSave",
+    "label":"Next",
+    "delay": 10000
   },
+  {
+    "action": "tickSubcategory",
+    "selector": ".list-inline.inline-block.btn-block.list-of-sub-categories",
+    "label": "Subcategory"
+   },
   {
     "action": "fill",
     "selector": "#member_listing_details_82-element-10",
-    "valueKey": "yearFormationBox"
+    "valueKey": "yearFormationBox",
+    "label":"Year of Formation"
   },
   {
     "action": "fill",
     "selector": "#member_listing_details_82-element-12",
-    "valueKey": "businessHoursBox"
+    "valueKey": "businessHoursBox",
+    "label":"Business Hours"
   },
   {
     "action": "fill",
     "selector": "#member_listing_details_82-element-13",
-    "valueKey": "paymentMethodsBox"
+    "valueKey": "paymentMethodsBox",
+    "label":"Payment Methods"
   },
   {
     "action": "click",
     "selector": ".btn.btn-lg.btn-success.col-sm-offset-2",
-    "valueKey": "NextButtonSave"
+    "valueKey": "NextButtonSave",
+    "label":"Next"
   },
 	{
-	  "action": "richFill",
-	  "selector": ".CodeMirror.cm-s-default.CodeMirror-wrap",
-	  "valueKey": "longDescriptionBox"
-	}
+	  "action": "consolidateData",
+    "label":"Consolidated Description"
+	},
+  {
+	  "action": "injectToFroala",
+    "label":"Inject Description"
+	},
+  {
+    "action": "click",
+    "selector": "#about_109-element-10",
+    "valueKey": "NextButtonSave",
+    "label":"Save"
+  },
+  {
+    "action": "click",
+    "selector": ".view-listing-link",
+    "label":"Redirect to Listing"
+  }
 
 ]

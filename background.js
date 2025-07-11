@@ -282,6 +282,8 @@ async function pollForCommands() {
   const userId = await getCurrentExtensionUserId();
   if (!userId) {
     console.log("❌ No user ID found, skipping command polling");
+    // Don't return early - allow manual triggers to work
+    console.log("💡 Note: Manual automation triggers will still work");
     return;
   }
   
@@ -400,6 +402,25 @@ async function handleFetchData(id, data) {
       dataCount: Object.keys(fetchedData).length,
       timestamp: new Date().toISOString()
     });
+
+    // 🚀 Trigger automation after data is fetched and user is ready
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTabId = tabs[0]?.id;
+        if (fetchedData.campaignData) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          const activeTabId = tabs[0]?.id;
+          if (activeTabId) {
+            chrome.tabs.sendMessage(activeTabId, { command: "startAutomationIfReady" }, (response) => {
+              if (response?.success) {
+                console.log("🚀 Automation started successfully.");
+              } else {
+                console.log("⚠️ Automation not started:", response?.reason);
+              }
+            });
+          }
+        });
+      }
+    });
     r();
   }));
 }
@@ -448,6 +469,23 @@ chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
     });
     case 'testCommandProcessing': return sendResponse({ success: true, message: 'Processed' });
     case 'reportConnectionStatus': reportAuthenticationStatus(); return sendResponse({ success: true });
+    case 'triggerAutomation': 
+      console.log("🎯 Manual automation trigger received from background");
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const activeTabId = tabs[0]?.id;
+        if (activeTabId) {
+          chrome.tabs.sendMessage(activeTabId, { command: "startAutomationManual" }, (response) => {
+            if (response?.success) {
+              console.log("🚀 Manual automation started successfully.");
+            } else {
+              console.log("⚠️ Manual automation failed:", response?.reason);
+            }
+          });
+        } else {
+          console.log("❌ No active tab found for automation trigger");
+        }
+      });
+      return sendResponse({ success: true, message: 'Automation trigger sent to content script' });
     default: return sendResponse({ success: false, error: 'Unknown command' });
   }
 });

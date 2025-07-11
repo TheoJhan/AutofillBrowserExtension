@@ -23,7 +23,7 @@
 	},
   "web_accessible_resources": [
     {
-      "resources": ["libs/*.js", "automation/*.json"],
+      "resources": ["libs/*.js", "libs/*.json", "automation/*.json"],
       "matches": ["<all_urls>"]
     }
   ],
