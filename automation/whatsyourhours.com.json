@@ -67,13 +67,18 @@
     "action": "fill",
     "selector": "#signup_free-element-27",
     "valueKey": "contactFirstNameBox",
-    "label": "Contact First Name"
+    "label": "Contact First Name",
+    "mode": "required",
+    "alternative": "firstnameAlternative"
   },
   {
     "action": "fill",
     "selector": "#signup_free-element-28",
     "valueKey": "contactLastNameBox",
-    "label": "Contact Last Name"
+    "label": "Contact Last Name",
+    "mode": "required",
+    "alternative": "lastnameAlternative"
+
   },
   {
     "action": "fill",
@@ -91,13 +96,18 @@
     "action": "fill",
     "selector": "#signup_free-element-31",
     "valueKey": "passDirectory",
-    "label": "Password Directory"
+    "label": "Password Directory",
+    "mode": "limit",
+    "limitvalue": "15"
+
   },
   {
     "action": "fill",
     "selector": "#signup_free-element-32",
     "valueKey": "passDirectory",
-    "label": "Password Directory"
+    "label": "Password Directory",
+    "mode": "limit",
+    "limitvalue": "15"
   },
   {
     "action": "click",
@@ -119,5 +129,12 @@
     "selector": "#signup_free-element-36",
     "valueKey": "NextButtonSave",
     "label": "Next"
-  }
+  },
+  {
+    "action": "click",
+    "selector": ".btn.btn-block btn-warning bold",
+    "valueKey": "NextButtonSave",
+    "label": "Contact Details"
+  },
+  
 ]

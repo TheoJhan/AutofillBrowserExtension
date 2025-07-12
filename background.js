@@ -30,6 +30,124 @@ function incrementAutomationCount(domain) {
   scheduleFirestoreSave();
 }
 
+// Function to increment citations used in plan_subscribers
+async function incrementCitationsUsed(domain) {
+  try {
+    console.log(`📈 Incrementing citations used for domain: ${domain}`);
+    
+    if (!db) {
+      console.warn("⚠️ Firebase not available, skipping citation increment");
+      return false;
+    }
+    
+    const userId = await getCurrentExtensionUserId();
+    if (!userId) {
+      console.warn("⚠️ No user ID found, skipping citation increment");
+      return false;
+    }
+    
+    // Update the plan_subscribers document
+    const userDocRef = db.collection('plan_subscribers').doc(userId);
+    
+    // Use FieldValue.increment to add 1 to citationsUsed
+    await userDocRef.update({
+      citationsUsed: firebase.firestore.FieldValue.increment(1),
+      lastUpdated: firebase.firestoreFieldValue.serverTimestamp()
+    });
+    
+    console.log(`✅ Citations used incremented for user ${userId}`);
+    return true;
+    
+  } catch (error) {
+    console.error("❌ Error incrementing citations used:", error);
+    return false;
+  }
+}
+
+// Function to get current citations usage
+async function getCurrentCitationsUsage() {
+  try {
+    console.log("🔍 Getting current citations usage...");
+    
+    // Check if we're in simulation mode
+    const isSimulation = !firebase.apps.length || firebase.apps.length === 0;
+    console.log("🔍 Firebase mode:", isSimulation ? "Simulation" : "Real");
+    
+    if (!db) {
+      console.warn("⚠️ Firebase not available, cannot check citations usage");
+      return null;
+    }
+    
+    const userId = await getCurrentExtensionUserId();
+    console.log("🔍 User ID:", userId);
+    
+    if (!userId) {
+      console.warn("⚠️ No user ID found, cannot check citations usage");
+      return null;
+    }
+    
+    console.log("🔍 Fetching user document from plan_subscribers...");
+    const userDoc = await db.collection('plan_subscribers').doc(userId).get();
+    
+    if (!userDoc.exists) {
+      console.warn("⚠️ User not found in plan_subscribers collection");
+      console.log("🔍 Attempted to fetch document:", `plan_subscribers/${userId}`);
+      
+      // In simulation mode, return default data
+      if (isSimulation) {
+        console.log("🔍 Simulation mode: Returning default citations data");
+        return {
+          citationsUsed: 5,
+          citations: 10,
+          remaining: 5
+        };
+      }
+      
+      return null;
+    }
+    
+    const userData = userDoc.data();
+    console.log("🔍 User data from Firestore:", userData);
+    
+    const citationsUsed = userData.citationsUsed || 0;
+    const citations = userData.citations || 0;
+    const remaining = Math.max(0, citations - citationsUsed);
+    
+    console.log("📊 Citations calculation:", {
+      citationsUsed,
+      citations,
+      remaining,
+      rawData: userData
+    });
+    
+    return {
+      citationsUsed,
+      citations,
+      remaining
+    };
+    
+  } catch (error) {
+    console.error("❌ Error getting citations usage:", error);
+    console.error("❌ Error details:", {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    
+    // In simulation mode, return default data on error
+    if (!firebase.apps.length || firebase.apps.length === 0) {
+      console.log("🔍 Simulation mode: Returning default citations data on error");
+      return {
+        citationsUsed: 5,
+        citations: 10,
+        remaining: 5
+      };
+    }
+    
+    return null;
+  }
+}
+
 // Function to schedule Firestore save with 5-minute buffer
 function scheduleFirestoreSave() {
   // Clear existing timeout
@@ -126,32 +244,24 @@ async function checkAutomationEligibility() {
       return { eligible: false, reason: "Automation is locked" };
     }
     
-    // Fetch user's plan subscription data
-    if (!db) {
-      console.warn("⚠️ Firebase not available, allowing automation");
-      return { eligible: true, reason: "Firebase unavailable" };
+    // Get current citations usage
+    const citationsUsage = await getCurrentCitationsUsage();
+    
+    if (!citationsUsage) {
+      console.warn("⚠️ Could not get citations usage, allowing automation");
+      return { eligible: true, reason: "Citations usage unavailable" };
     }
     
-    const userDoc = await db.collection('plan_subscribers').doc(userUid).get();
+    console.log(`📊 Plan check - Citations used: ${citationsUsage.citationsUsed}, Limit: ${citationsUsage.citations}, Remaining: ${citationsUsage.remaining}`);
     
-    if (!userDoc.exists) {
-      console.log("❌ User not found in plan_subscribers, automation blocked");
-      return { eligible: false, reason: "User not found in plan subscribers" };
-    }
-    
-    const userData = userDoc.data();
-    const citationsUsed = userData.citationsUsed || 0;
-    const citations = userData.citations || 0;
-    
-    console.log(`📊 Plan check - Citations used: ${citationsUsed}, Limit: ${citations}`);
-    
-    if (citationsUsed >= citations) {
+    if (citationsUsage.remaining <= 0) {
       console.log("❌ Citations limit reached, automation blocked");
       return { 
         eligible: false, 
         reason: "Citations limit reached",
-        citationsUsed,
-        citations
+        citationsUsed: citationsUsage.citationsUsed,
+        citations: citationsUsage.citations,
+        remaining: citationsUsage.remaining
       };
     }
     
@@ -159,8 +269,9 @@ async function checkAutomationEligibility() {
     return { 
       eligible: true, 
       reason: "User eligible",
-      citationsUsed,
-      citations
+      citationsUsed: citationsUsage.citationsUsed,
+      citations: citationsUsage.citations,
+      remaining: citationsUsage.remaining
     };
     
   } catch (error) {
@@ -178,6 +289,7 @@ function createFirebaseInterface() {
     apps: [],
     firestore: () => ({
       collection: (name) => ({
+        _collectionName: name,
         _whereClauses: [],
         _limit: 10,
         where(field, op, val) {
@@ -214,7 +326,28 @@ function createFirebaseInterface() {
         doc(id) {
           return {
             update: async (data) => console.log(`📝 Firestore doc ${id} update:`, data),
-            set: async (data) => console.log(`📝 Firestore doc ${id} set:`, data)
+            set: async (data) => console.log(`📝 Firestore doc ${id} set:`, data),
+            get: async () => {
+              // Simulate plan_subscribers document
+              if (this._collectionName === 'plan_subscribers') {
+                const userId = await getCurrentExtensionUserId();
+                if (id === userId) {
+                  console.log(`🔍 Simulation: Returning plan_subscribers data for user ${userId}`);
+                  return {
+                    exists: true,
+                    data: () => ({
+                      citationsUsed: 5,  // Simulated data
+                      citations: 10,     // Simulated data
+                      lastUpdated: new Date().toISOString()
+                    })
+                  };
+                }
+              }
+              return {
+                exists: false,
+                data: () => ({})
+              };
+            }
           };
         },
         add: async (data) => ({ id: `fake-command-id-${Date.now()}` }),
@@ -223,6 +356,11 @@ function createFirebaseInterface() {
     }),
     firestoreFieldValue: {
       serverTimestamp: () => new Date().toISOString()
+    },
+    firestore: {
+      FieldValue: {
+        increment: (value) => ({ _increment: value })
+      }
     }
   };
   firebase.apps.push(true);
@@ -469,6 +607,155 @@ chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
     });
     case 'testCommandProcessing': return sendResponse({ success: true, message: 'Processed' });
     case 'reportConnectionStatus': reportAuthenticationStatus(); return sendResponse({ success: true });
+    
+    case 'checkAutomationEligibility':
+      // Check if user can run automation
+      checkAutomationEligibility().then(result => {
+        sendResponse(result);
+      });
+      return true; // Keep message channel open for async response
+    
+    case 'incrementCitationsUsed':
+      // Increment citations used for a domain
+      const domain = msg.domain;
+      if (!domain) {
+        sendResponse({ success: false, error: 'Domain not provided' });
+        return;
+      }
+      
+      incrementCitationsUsed(domain).then(success => {
+        sendResponse({ success, domain });
+      });
+      return true; // Keep message channel open for async response
+    
+    case 'getCitationsUsage':
+      // Get current citations usage
+      getCurrentCitationsUsage().then(usage => {
+        sendResponse({ success: true, usage });
+      });
+      return true; // Keep message channel open for async response
+    
+    case 'forceSaveAutomationCounts':
+      // Force save automation counts immediately
+      forceSaveAutomationCounts().then(() => {
+        sendResponse({ success: true, message: 'Automation counts saved' });
+      });
+      return true; // Keep message channel open for async response
+    
+    case 'debugFirebaseConnection':
+      // Debug Firebase connection and citations
+      (async () => {
+        try {
+          const userId = await getCurrentExtensionUserId();
+          const citationsUsage = await getCurrentCitationsUsage();
+          const eligibility = await checkAutomationEligibility();
+          
+          sendResponse({
+            success: true,
+            debug: {
+              firebaseInitialized: !!db,
+              userId,
+              citationsUsage,
+              eligibility,
+              firebaseApps: firebase.apps.length,
+              isSimulation: !firebase.apps.length || firebase.apps.length === 0
+            }
+          });
+        } catch (error) {
+          sendResponse({
+            success: false,
+            error: error.message,
+            debug: {
+              firebaseInitialized: !!db,
+              firebaseApps: firebase.apps.length,
+              isSimulation: !firebase.apps.length || firebase.apps.length === 0
+            }
+          });
+        }
+      })();
+      return true; // Keep message channel open for async response
+    
+    case 'getGitHubConfig':
+      // Get current GitHub configuration
+      chrome.storage.local.get(['githubConfig'], (result) => {
+        sendResponse({
+          success: true,
+          config: result.githubConfig || {
+            owner: 'your-username',
+            repo: 'your-repo-name',
+            branch: 'main',
+            path: 'automation'
+          }
+        });
+      });
+      return true; // Keep message channel open for async response
+    
+    case 'setGitHubConfig':
+      // Set GitHub configuration
+      const newConfig = msg.config;
+      if (!newConfig || !newConfig.owner || !newConfig.repo) {
+        sendResponse({ success: false, error: 'Invalid configuration' });
+        return;
+      }
+      
+      chrome.storage.local.set({ githubConfig: newConfig }, () => {
+        if (chrome.runtime.lastError) {
+          sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        } else {
+          sendResponse({ success: true, config: newConfig });
+        }
+      });
+      return true; // Keep message channel open for async response
+    
+    case 'resetGitHubConfig':
+      // Reset GitHub configuration to default
+      chrome.storage.local.remove(['githubConfig'], () => {
+        if (chrome.runtime.lastError) {
+          sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        } else {
+          sendResponse({ success: true, message: 'GitHub configuration reset to default' });
+        }
+      });
+      return true; // Keep message channel open for async response
+    
+    case 'testGitHubConnection':
+      // Test GitHub connection with current configuration
+      (async () => {
+        try {
+          const { githubConfig } = await new Promise(r => chrome.storage.local.get(['githubConfig'], r));
+          const config = githubConfig || {
+            owner: 'TheoJhan',
+            repo: 'AutofillBrowserExtension',
+            branch: 'main',
+            path: 'automation'
+          };
+          
+          const testUrl = `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/${config.path}/test.json`;
+          const response = await fetch(testUrl);
+          
+          sendResponse({
+            success: true,
+            testResult: {
+              config,
+              testUrl,
+              status: response.status,
+              ok: response.ok,
+              accessible: response.ok
+            }
+          });
+        } catch (error) {
+          sendResponse({
+            success: false,
+            error: error.message,
+            testResult: {
+              config: githubConfig || 'default',
+              accessible: false
+            }
+          });
+        }
+      })();
+      return true; // Keep message channel open for async response
+    
     case 'triggerAutomation': 
       console.log("🎯 Manual automation trigger received from background");
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

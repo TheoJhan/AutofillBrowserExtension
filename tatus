@@ -1,0 +1,7 @@
+warning: in the working copy of 'background.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'content.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'main.js', LF will be replaced by CRLF the next time Git touches it
+automation/twidloo.com.json
+background.js
+content.js
+main.js

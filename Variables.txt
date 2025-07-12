@@ -1,5 +1,120 @@
 Action
 	"fill"
+		- Basic fill action
+		- {
+			  "action": "fill",
+			  "selector": "#field",
+			  "valueKey": "fieldName"
+		   }
+
+FILL ACTION MODES GUIDE:
+=======================
+
+1. REQUIRED MODE
+   - Purpose: Use alternative value if primary valueKey is empty
+   - Use Case: When you have backup data fields
+   - Parameters: 
+     * alternative: The alternative key to use if primary value is empty
+   - Example:
+     {
+       "action": "fill", 
+       "selector": "#business_name",
+       "valueKey": "contactFirstNameBox",
+       "mode": "required",
+       "alternative": "firstnameAlternative"
+     }
+   - Behavior: If contactFirstNameBox is empty, uses firstnameAlternative instead
+
+2. LIMIT MODE
+   - Purpose: Truncate text to specified number of characters (cuts words)
+   - Use Case: Password fields, username fields, or any field with strict character limits
+   - Parameters:
+     * limitvalue: Maximum number of characters allowed
+   - Example:
+     {
+       "action": "fill", 
+       "selector": "#password",
+       "valueKey": "camppassword",
+       "mode": "limit",
+       "limitvalue": "15"
+     }
+   - Behavior: "Ornament-stylus-warbler!" becomes "Ornament-stylu" (15 chars)
+
+3. LIMIT BY SENTENCE MODE
+   - Purpose: Truncate text at nearest sentence boundary (period)
+   - Use Case: Description fields, bio fields, or any content that should maintain sentence integrity
+   - Parameters:
+     * limitvalue: Maximum number of characters allowed
+   - Example:
+     {
+       "action": "fill", 
+       "selector": "#description",
+       "valueKey": "longDescriptionBox",
+       "mode": "limitBySentence",
+       "limitvalue": "150"
+     }
+   - Behavior: Cuts at the last complete sentence before the character limit
+   - Input: "Unlock complete directory access with our premium plan. With a free or basic plan, you get access to essential directories. But with our Premium Plan..."
+   - Output: "Unlock complete directory access with our premium plan. With a free or basic plan, you get access to essential directories."
+
+MODE SELECTION GUIDE:
+====================
+
+Choose the right mode based on your field type:
+
+* PASSWORDS/USERNAMES: Use "limit" mode
+  - Cuts at exact character count
+  - Example: limitvalue="20" for username fields
+
+* DESCRIPTIONS/BIO: Use "limitBySentence" mode  
+  - Maintains sentence integrity
+  - Example: limitvalue="200" for description fields
+
+* BACKUP FIELDS: Use "required" mode
+  - Provides fallback data
+  - Example: alternative="backupEmail" for email fields
+
+* REGULAR FIELDS: Use basic fill (no mode)
+  - Standard text filling
+  - Example: business names, addresses, etc.
+
+4. ADDRESS MODE
+   - Purpose: Handle different address display scenarios
+   - Use Case: Address fields that need different behaviors based on business type
+   - Parameters:
+     * address-mode: "Show Address", "Full Hide", or "Address Line 1"
+     * required: true/false (for Address Line 1 mode)
+   - Examples:
+     {
+       "action": "fill",
+       "selector": "#address",
+       "valueKey": "addressBox",
+       "mode": "address",
+       "address-mode": "Show Address"
+     }
+     {
+       "action": "fill",
+       "selector": "#address",
+       "valueKey": "addressBox", 
+       "mode": "address",
+       "address-mode": "Full Hide"
+     }
+     {
+       "action": "fill",
+       "selector": "#address",
+       "valueKey": "addressBox",
+       "mode": "address", 
+       "address-mode": "Address Line 1",
+       "required": true
+     }
+   - Behaviors:
+     * "Show Address": Uses full address (line1, line2, city, state, zipcode, country)
+     * "Full Hide": Empties the field completely
+     * "Address Line 1": Uses service area or line1 if required, otherwise empty
+
+* ADDRESS FIELDS: Use "address" mode
+  - Handles different address scenarios
+  - Example: address-mode="Show Address" for full address display
 	"click"
 	valueKey="NextButtonSave"-- special function to be use in order to change tab
 	"uploadImages"
@@ -34,7 +149,93 @@ Action
 							  "selector": ".modal-dialog",
 							  "value": "15000" // optional timeout in ms (default: 10000)
 						   }
-	
+	"selectHours" - select hours from dropdown (converts 12-hour to 24-hour format automatically)
+						- {
+							  "action": "selectHours",
+							  "selector": "#hours-dropdown",
+							  "valueKey": "monAm" // or any hours variable
+						   }
+	"formatHours" - format business hours for textarea/input fields with different formats
+						- {
+							  "action": "formatHours",
+							  "selector": "#business-hours-textarea",
+							  "valueKey": "businessHoursBox",
+							  "format": "consolidated" // see format options below
+						   }
+
+BUSINESS HOURS FORMATTING GUIDE:
+===============================
+
+selectHours Action (for dropdowns):
+- Automatically converts 12-hour to 24-hour format
+- Finds matching options in dropdown
+- Works with any hours variable (monAm, monPm, businessHoursBox, etc.)
+
+Examples:
+{
+  "action": "selectHours",
+  "selector": "#monday-opening",
+  "valueKey": "monAm"
+}
+
+{
+  "action": "selectHours", 
+  "selector": "#opening-time",
+  "valueKey": "businessHoursBox"
+}
+
+formatHours Action (for textarea/input fields):
+- Formats business hours with different output styles
+- Converts all times to 24-hour format
+- Available formats:
+
+1. "standard" - Keep original structure, convert times only
+   Input: "Monday: 9:00 AM - 5:00 PM"
+   Output: "Monday: 09:00 - 17:00"
+
+2. "24hour" - Convert all times to 24-hour format
+   Input: "9:00 AM - 5:00 PM"
+   Output: "09:00 - 17:00"
+
+3. "compact" - Simple time range (legacy format)
+   Input: "Monday: 9:00 AM - 5:00 PM"
+   Output: "09:00-17:00"
+
+4. "consolidated" - Smart consolidation with day ranges
+   Input: "Monday: 8:00 am - 5:00 pm, Tuesday: 8:00 am - 5:00 pm, Wednesday: 8:00 am - 5:00 pm, Thursday: 8:00 am - 5:00 pm, Friday: 8:00 am - 5:00 pm, Saturday: Closed, Sunday: Closed"
+   Output: "Mon-Fri: 08:00-17:00, Sat: Closed, Sun: Closed"
+
+5. "detailed" - Keep day names, convert times
+   Input: "Monday: 9:00 AM - 5:00 PM"
+   Output: "Monday: 09:00-17:00"
+
+6. "simple" - Just the time range
+   Input: "Monday: 9:00 AM - 5:00 PM"
+   Output: "09:00 - 17:00"
+
+Site-Specific Setup Guide:
+=========================
+
+For sites with dropdown time selectors:
+- Use "selectHours" action
+- Works with any hours variable
+- Automatically finds matching 24-hour options
+
+For sites with textarea/input fields:
+- Use "formatHours" action
+- Choose appropriate format based on site requirements:
+
+  * Standard business sites: "standard" or "24hour"
+  * Compact display sites: "compact" or "consolidated"  
+  * Detailed listing sites: "detailed"
+  * Simple time display: "simple"
+
+For sites requiring consolidated format:
+- Use "formatHours" with "consolidated" format
+- Automatically groups consecutive days (Mon-Fri, Sat-Sun)
+- Handles "Closed" days intelligently
+- Perfect for directory listings and business profiles
+
 valueKey:
 	"BL Report ID:":                "idBox",
     "Completion Date:":             "completionDateBox",
@@ -90,6 +291,8 @@ valueKey:
     "Username:":                    "campUsername",
     "Password(email):":             "passEmail",
     "Password(directories):":       "passDirectory"
+	"Logo":							"logoBox"
+	"Image 1":						"image1Box"
 	Latitude:                        latBox	
 	Longtitude:                      longBox
 	Address Line 1:                  line1
@@ -100,5 +303,6 @@ valueKey:
 	Country:                         country
 	CountryAbbreviation:             countryAbbr - 2 letters
 	Zipcode 						 zipcode
-
-	
+Alternatives
+	"Contact First Name:":          "contactFirstNameBox",
+    "Contact Last Name:":           "contactLastNameBox",

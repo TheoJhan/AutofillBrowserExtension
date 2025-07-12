@@ -28,7 +28,20 @@
     "valueKey": "",
     "label":"Click for captcha"
   },
-
+  {
+    "action": "click",
+    "selector": ".recaptcha-checkbox-border",
+    "valueKey": "",
+    "label":"Recaptcha",
+    "delay":3000
+  },
+  
+  {
+    "action": "click",
+    "selector": "#continue_to_listing",
+    "valueKey": "NextButtonSave",
+    "label":"Next"
+  },
   {
     "action": "click",
     "selector": ".btn.btn-block.btn-warning.bold",

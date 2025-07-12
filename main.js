@@ -169,6 +169,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     if (response && response.success) {
                         console.log(`✅ Command '${command}' executed successfully:`, response);
+                        // Update button state based on response
+                        if (command === 'pause') {
+                            isPaused = true;
+                            updatePlayPauseButton(true);
+                        } else if (command === 'resume') {
+                            isPaused = false;
+                            updatePlayPauseButton(false);
+                        }
                     } else {
                         console.warn(`⚠️ Command '${command}' failed:`, response);
                     }
@@ -178,14 +186,74 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Function to update play/pause button appearance
+    function updatePlayPauseButton(isPaused) {
+        if (!playPauseBtn2) return;
+        
+        const playIcon = playPauseBtn2.querySelector('.play-icon');
+        const pauseIcon = playPauseBtn2.querySelector('.pause-icon');
+        
+        if (isPaused) {
+            // Show play icon (automation is paused)
+            if (playIcon) playIcon.style.display = 'block';
+            if (pauseIcon) pauseIcon.style.display = 'none';
+        } else {
+            // Show pause icon (automation is running)
+            if (playIcon) playIcon.style.display = 'none';
+            if (pauseIcon) pauseIcon.style.display = 'block';
+        }
+    }
+
+    // Function to check automation status and update button
+    function checkAutomationStatus() {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0]) {
+                chrome.tabs.sendMessage(tabs[0].id, { command: "getAutomationStatus" }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        console.warn("⚠️ Error checking automation status:", chrome.runtime.lastError.message);
+                        return;
+                    }
+                    
+                    if (response && response.success) {
+                        const isRunning = response.isRunning;
+                        const isPaused = response.isPaused;
+                        const isAborted = response.isAborted;
+                        
+                        // Update button state
+                        if (isAborted || !isRunning) {
+                            // Automation is stopped/aborted - show play icon
+                            updatePlayPauseButton(true);
+                            window.isPaused = true;
+                        } else if (isPaused) {
+                            // Automation is paused - show play icon
+                            updatePlayPauseButton(true);
+                            window.isPaused = true;
+                        } else {
+                            // Automation is running - show pause icon
+                            updatePlayPauseButton(false);
+                            window.isPaused = false;
+                        }
+                        
+                        // Update other button states
+                        updateButtonStates(isRunning && !isPaused);
+                        
+                        // Update index display if automation is completed
+                        if (isAborted || !isRunning) {
+                            loadResumeIndexForActiveTab();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     if (playPauseBtn2) {
         playPauseBtn2.addEventListener('click', function() {
-            if (isPaused) {
+            if (window.isPaused) {
                 sendAutomationCommand('resume');
-                isPaused = false;
             } else {
                 sendAutomationCommand('pause');
-                isPaused = true;
             }
         });
     }
@@ -535,13 +603,85 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Function to display citations usage
+    function displayCitationsUsage() {
+        chrome.runtime.sendMessage({ action: 'getCitationsUsage' }, (response) => {
+            if (response && response.success && response.usage) {
+                const usage = response.usage;
+                const usageText = `Citations: ${usage.citationsUsed}/${usage.citations} (${usage.remaining} remaining)`;
+                
+                // Create or update usage display
+                let usageDisplay = document.getElementById('citationsUsageDisplay');
+                if (!usageDisplay) {
+                    usageDisplay = document.createElement('div');
+                    usageDisplay.id = 'citationsUsageDisplay';
+                    usageDisplay.style.fontSize = '11px';
+                    usageDisplay.style.opacity = '0.8';
+                    usageDisplay.style.marginTop = '4px';
+                    usageDisplay.style.fontWeight = '500';
+                    
+                    // Insert after the index display
+                    const connectionInfo = document.querySelector('.connection-info');
+                    if (connectionInfo) {
+                        connectionInfo.appendChild(usageDisplay);
+                    }
+                }
+                
+                usageDisplay.textContent = usageText;
+                
+                // Add color coding based on usage
+                if (usage.remaining <= 0) {
+                    usageDisplay.style.color = '#ff4444'; // Red
+                } else if (usage.remaining <= Math.ceil(usage.citations * 0.1)) {
+                    usageDisplay.style.color = '#ff8800'; // Orange
+                } else {
+                    usageDisplay.style.color = '#4CAF50'; // Green
+                }
+            }
+        });
+    }
+
     // Listen for automation status changes from content script
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.action === 'automationStatusChanged') {
             updateButtonStates(request.isRunning);
+            // Update play/pause button based on status
+            if (request.isRunning) {
+                updatePlayPauseButton(false); // Show pause icon
+                window.isPaused = false;
+            } else {
+                updatePlayPauseButton(true); // Show play icon
+                window.isPaused = true;
+            }
+        }
+        
+        if (request.action === 'updateAutomationStatus') {
+            const status = request.status;
+            if (status.status === 'paused') {
+                updatePlayPauseButton(true); // Show play icon
+                window.isPaused = true;
+            } else if (status.status === 'resumed') {
+                updatePlayPauseButton(false); // Show pause icon
+                window.isPaused = false;
+            } else if (status.status === 'aborted' || status.status === 'completed') {
+                updatePlayPauseButton(true); // Show play icon
+                window.isPaused = true;
+            }
         }
     });
 
+    // Check automation status on page load
+    setTimeout(checkAutomationStatus, 500);
+    
+    // Periodically check automation status to keep UI in sync
+    setInterval(checkAutomationStatus, 2000);
+    
+    // Display citations usage on page load
+    setTimeout(displayCitationsUsage, 1000);
+    
+    // Periodically update citations usage display
+    setInterval(displayCitationsUsage, 10000); // Update every 10 seconds
+    
     // Initial load
     loadResumeIndexForActiveTab();
 
